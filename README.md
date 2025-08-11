@@ -1,37 +1,126 @@
-# Final_LLM (HackRx) — Delivery bundle (Mock + Real-ready)
+**LLM Query Engine** 
 
-This repository is a **deployable, reviewable** backend for the HackRx LLM Query-Retrieval task.
-It contains a working **mock model** (fast, local) and hooks to replace the mock with **real embeddings/LLMs** (Hugging Face / Pinecone / OpenAI) later.
+A **FastAPI-powered LLM service** designed to **parse documents**, **generate embeddings**, **store and search** them in Pinecone, and **answer questions** using either a mock model or real LLMs from Hugging Face.
 
-**Contents**
-- `app/` — FastAPI app and modules (parser, embedder, retriever, llm_engine, utils)
-- `requirements.txt` — minimal dependencies for local/mocked testing
-- `runtime.txt` — force Python 3.10 on Render
-- `render.yaml` — sample Render configuration (adjust secrets in Render UI)
-- `.env.template` — environment variable template (DO NOT COMMIT real secrets)
+## 🚀 Features
+- 📂 **Document ingestion** (PDF, DOCX, TXT)
+- 🧠 **Semantic search** with `InstructorEmbedding` / `Sentence Transformers`
+- 🗄️ **Vector storage** via Pinecone
+- 🤖 **Mock or Real LLM Answering**
+- 🌐 **REST API endpoint** for automated evaluation
+- ⚡ **Deployable** to Railway, Render, or Ngrok
 
-**Quick start (local)**
-1. Create venv and activate
-   ```bash
-   python -m venv venv
-   source venv/bin/activate   # Windows: venv\\Scripts\\activate
+---
+
+## 🛠 Tech Stack
+- **FastAPI** – API framework
+- **Pinecone** – Vector database
+- **Hugging Face** – Model inference
+- **Sentence Transformers** – Embedding generation
+- **pdfplumber**, **python-docx** – Parsing tools
+- **Uvicorn** – ASGI server
+
+---
+
+## 📦 Installation
+
+1️⃣ **Clone the repository**
+```bash
+git clone https://github.com/<your-username>/<your-repo>.git
+cd <your-repo>
+````
+
+2️⃣ **Create a virtual environment**
+
+```bash
+python -m venv venv
+source venv/bin/activate   # Mac/Linux
+venv\Scripts\activate      # Windows
+```
+
+3️⃣ **Install dependencies**
+
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+4️⃣ **Set environment variables** in `.env`:
+
+```env
+PINECONE_API_KEY=your_pinecone_key
+PINECONE_ENV=your_pinecone_environment
+HUGGINGFACE_API_KEY=your_huggingface_token
+HUGGINGFACE_MODEL=hkunlp/instructor-xl   # or smaller model like all-MiniLM-L6-v2
+```
+
+---
+
+## ▶️ Running Locally
+
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Your API will be available at:
+
+```
+http://127.0.0.1:8000
+```
+
+---
+
+## 📡 API Usage
+
+### **POST** `/api/v1/hackrx/run`
+
+#### Request Body:
+
+```json
+{
+  "documents": [
+    "https://example.com/sample.pdf",
+    "https://example.com/guide.docx"
+  ],
+  "query": "What is the main objective mentioned in the document?"
+}
+```
+
+#### Response:
+
+```json
+{
+  "answer": "The main objective is to develop a scalable AI-powered assistant.",
+  "reasoning": "Matched relevant sentences containing the query keywords."
+}
+```
+
+---
+
+## 🚀 Deployment
+
+### **Ngrok (Local Testing)**
+
+```bash
+ngrok http 8000
+```
+
+Use the generated `https://xxxxx.ngrok.io/api/v1/hackrx/run` URL for evaluation.
+
+---
+
+### **Railway**
+
+1. Install the [Railway CLI](https://docs.railway.app/develop/cli)
+2. Create a `Procfile`:
+
    ```
-2. Install requirements
-   ```bash
-   pip install --upgrade pip
-   pip install -r requirements.txt
+   web: uvicorn app.main:app --host 0.0.0.0 --port $PORT
    ```
-3. Create .env from `.env.template` and fill keys (or set env vars)
-4. Run the app
-   ```bash
-   uvicorn app.main:app --reload --port 8000
-   ```
-5. Open Swagger: http://127.0.0.1:8000/docs
-6. Test with Postman (see README "Postman testing" section).
+3. Run:
 
-**Notes**
-- The default behavior uses a **mock TF-IDF based "embedding"** (fast) that works offline and produces explainable retrievals. Set `USE_MOCK=true` (default).
-- To use real embeddings and vector DB:
-  - Provide `PINECONE_API_KEY` + `PINECONE_ENV` (the code will use Pinecone if present).
-  - Install heavy ML libs (sentence-transformers / InstructorEmbedding) if you want local S-BERT embeddings.
-  - Provide `HUGGINGFACEHUB_API_TOKEN` or `OPENAI_API_KEY` to enable actual LLM generation.
+   ```bash
+   railway init
+   railway up
+   ```
+4. Set Railway environment variables (`PINECONE_API_KEY`, `HUGGINGFACE_API_KEY`, etc.).
