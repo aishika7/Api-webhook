@@ -1,4 +1,4 @@
-**LLM Query Engine** 
+## **LLM Query Engine** 
 
 A **FastAPI-powered LLM service** designed to **parse documents**, **generate embeddings**, **store and search** them in Pinecone, and **answer questions** using either a mock model or real LLMs from Hugging Face.
 
